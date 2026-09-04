@@ -1,7 +1,7 @@
 import Survey, { Question } from "./Survey";
 
 const questions: Question[] = [
-  { id: "name", type: "short", label: "Name", required: true },
+  { id: "name", type: "short", label: "Full Name", required: true },
   { id: "age", type: "short", label: "Age", required: true },
   { id: "phone", type: "short", label: "Phone Number", required: true },
   { id: "favoriteSport", type: "short", label: "Favorite Sport" },
@@ -23,7 +23,7 @@ const questions: Question[] = [
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-white py-12 px-4">
+    <main className="min-h-screen">
       <Survey
         title="Feedback Form"
         description="We'd love to hear from you. It takes 2 minutes."
