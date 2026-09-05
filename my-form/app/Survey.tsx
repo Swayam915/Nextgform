@@ -1,21 +1,23 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { submitForm } from "./actions"
 
 export type Question =
-    | { id: string; type: "short"; label: string; required?: boolean }
-    | { id: string; type: "paragraph"; label: string; required?: boolean }
-    | { id: string; type: "multiple"; label: string; options: string[]; required?: boolean }
-    | { id: string; type: "checkbox"; label: string; options: string[]; required?: boolean };
+    | { id: string; type: "short"; label: string; required?: boolean; image?: string }
+    | { id: string; type: "paragraph"; label: string; required?: boolean; image?: string }
+    | { id: string; type: "multiple"; label: string; options: string[]; required?: boolean; image?: string; optionImages?: Record<string, string> }
+    | { id: string; type: "checkbox"; label: string; options: string[]; required?: boolean; image?: string; optionImages?: Record<string, string> };
 
 type Props = {
     title: string;
     description?: string;
+    headerImage?: string;
     questions: Question[];
 }
 
-export default function Survey({ title, description, questions }: Props) {
+export default function Survey({ title, description, headerImage, questions }: Props) {
     const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -77,6 +79,17 @@ export default function Survey({ title, description, questions }: Props) {
                 {/* Header Card */}
                 <div className="mb-8 overflow-hidden rounded-3xl bg-white shadow-lg">
                     <div className="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                    {headerImage && (
+                        <div className="relative h-64 w-full">
+                            <Image
+                                src={headerImage}
+                                alt="Form header"
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                        </div>
+                    )}
                     <div className="p-8">
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{title}</h1>
                         {description && <p className="mt-3 text-gray-600 text-lg">{description}</p>}
@@ -116,6 +129,18 @@ export default function Survey({ title, description, questions }: Props) {
                                     <span className="text-sm font-bold text-white">{index + 1}</span>
                                 </div>
                                 <div className="flex-1">
+                                    {/* Question Image */}
+                                    {q.image && (
+                                        <div className="relative h-40 w-full mb-4 rounded-xl overflow-hidden">
+                                            <Image
+                                                src={q.image}
+                                                alt={q.label}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
+                                    )}
+                                    
                                     <label className="block text-base font-semibold text-gray-900">
                                         {q.label}
                                         {q.required && <span className="ml-1 text-red-500">*</span>}
@@ -144,8 +169,8 @@ export default function Survey({ title, description, questions }: Props) {
                                     {q.type === "multiple" && (
                                         <div className="mt-4 space-y-3">
                                             {q.options.map((opt) => (
-                                                <label key={opt} className="flex items-center gap-3 cursor-pointer group/radio p-3 rounded-xl hover:bg-indigo-50 transition-colors">
-                                                    <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-gray-300 group-hover/radio:border-indigo-500 transition-colors">
+                                                <label key={opt} className="flex items-start gap-3 cursor-pointer group/radio p-3 rounded-xl hover:bg-indigo-50 transition-colors border border-transparent hover:border-indigo-200">
+                                                    <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-gray-300 group-hover/radio:border-indigo-500 transition-colors flex-shrink-0 mt-0.5">
                                                         <input 
                                                             type="radio" 
                                                             name={q.id} 
@@ -158,7 +183,19 @@ export default function Survey({ title, description, questions }: Props) {
                                                             <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-blue-500 to-purple-500"></div>
                                                         )}
                                                     </div>
-                                                    <span className="text-gray-700 font-medium">{opt}</span>
+                                                    <div className="flex-1">
+                                                        {q.optionImages?.[opt] && (
+                                                            <div className="relative h-24 w-full mb-2 rounded-lg overflow-hidden">
+                                                                <Image
+                                                                    src={q.optionImages[opt]}
+                                                                    alt={opt}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <span className="text-gray-700 font-medium block">{opt}</span>
+                                                    </div>
                                                 </label>
                                             ))}
                                         </div>
@@ -167,8 +204,8 @@ export default function Survey({ title, description, questions }: Props) {
                                     {q.type === "checkbox" && (
                                         <div className="mt-4 space-y-3">
                                             {q.options.map((opt) => (
-                                                <label key={opt} className="flex items-center gap-3 cursor-pointer group/checkbox p-3 rounded-xl hover:bg-indigo-50 transition-colors">
-                                                    <div className="flex h-5 w-5 items-center justify-center rounded-lg border-2 border-gray-300 group-hover/checkbox:border-indigo-500 transition-colors" style={{
+                                                <label key={opt} className="flex items-start gap-3 cursor-pointer group/checkbox p-3 rounded-xl hover:bg-indigo-50 transition-colors border border-transparent hover:border-indigo-200">
+                                                    <div className="flex h-5 w-5 items-center justify-center rounded-lg border-2 border-gray-300 group-hover/checkbox:border-indigo-500 transition-colors flex-shrink-0 mt-0.5" style={{
                                                         backgroundColor: ((answers[q.id] as string[]) ?? []).includes(opt) ? '#6366f1' : 'transparent'
                                                     }}>
                                                         <input 
@@ -183,7 +220,19 @@ export default function Survey({ title, description, questions }: Props) {
                                                             </svg>
                                                         )}
                                                     </div>
-                                                    <span className="text-gray-700 font-medium">{opt}</span>
+                                                    <div className="flex-1">
+                                                        {q.optionImages?.[opt] && (
+                                                            <div className="relative h-24 w-full mb-2 rounded-lg overflow-hidden">
+                                                                <Image
+                                                                    src={q.optionImages[opt]}
+                                                                    alt={opt}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <span className="text-gray-700 font-medium block">{opt}</span>
+                                                    </div>
                                                 </label>
                                             ))}
                                         </div>
